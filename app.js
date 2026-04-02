@@ -137,6 +137,13 @@ rightBtn.addEventListener("click", () => {
 updateBars();
 showCard();
 
+// === Keyboard Shortcuts ===
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.key === "ArrowLeft") { leftBtn.click(); }
+  if (e.key === "ArrowRight") { rightBtn.click(); }
+});
+
 // === PM Metrics Integration ===
 (function () {
   try {
