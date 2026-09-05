@@ -106,30 +106,38 @@ function showEnding() {
   }
 }
 
+let animating = false;
+
 leftBtn.addEventListener("click", () => {
+  if (animating || idx >= CLUES.length) return;
+  animating = true;
   const delta = CLUES[idx].hold;
   decisions.push({ action: "扣留", delta });
+  idx += 1;
   // Swipe left animation
   card.style.transition = "transform 0.2s, opacity 0.2s";
   card.style.transform = "translateX(-60px)";
   card.style.opacity = "0";
   setTimeout(() => {
     apply(delta);
-    idx += 1;
+    animating = false;
     showCard();
   }, 200);
 });
 
 rightBtn.addEventListener("click", () => {
+  if (animating || idx >= CLUES.length) return;
+  animating = true;
   const delta = CLUES[idx].release;
   decisions.push({ action: "发布", delta });
+  idx += 1;
   // Swipe right animation
   card.style.transition = "transform 0.2s, opacity 0.2s";
   card.style.transform = "translateX(60px)";
   card.style.opacity = "0";
   setTimeout(() => {
     apply(delta);
-    idx += 1;
+    animating = false;
     showCard();
   }, 200);
 });
@@ -139,6 +147,7 @@ showCard();
 
 // === Keyboard Shortcuts ===
 document.addEventListener("keydown", (e) => {
+  if (e.repeat) return;
   if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
   if (e.key === "ArrowLeft") { leftBtn.click(); }
   if (e.key === "ArrowRight") { rightBtn.click(); }
