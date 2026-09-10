@@ -38,6 +38,7 @@ let idx = 0;
 let cred = 50;
 let traffic = 50;
 let decisions = [];
+let isAnimating = false;
 
 function setStatus(text) {
   statusEl.textContent = `状态: ${text}`;
@@ -107,6 +108,8 @@ function showEnding() {
 }
 
 leftBtn.addEventListener("click", () => {
+  if (isAnimating) return;
+  isAnimating = true;
   const delta = CLUES[idx].hold;
   decisions.push({ action: "扣留", delta });
   // Swipe left animation
@@ -114,6 +117,7 @@ leftBtn.addEventListener("click", () => {
   card.style.transform = "translateX(-60px)";
   card.style.opacity = "0";
   setTimeout(() => {
+    isAnimating = false;
     apply(delta);
     idx += 1;
     showCard();
@@ -121,6 +125,8 @@ leftBtn.addEventListener("click", () => {
 });
 
 rightBtn.addEventListener("click", () => {
+  if (isAnimating) return;
+  isAnimating = true;
   const delta = CLUES[idx].release;
   decisions.push({ action: "发布", delta });
   // Swipe right animation
@@ -128,6 +134,7 @@ rightBtn.addEventListener("click", () => {
   card.style.transform = "translateX(60px)";
   card.style.opacity = "0";
   setTimeout(() => {
+    isAnimating = false;
     apply(delta);
     idx += 1;
     showCard();
@@ -140,6 +147,7 @@ showCard();
 // === Keyboard Shortcuts ===
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.repeat) return;
   if (e.key === "ArrowLeft") { leftBtn.click(); }
   if (e.key === "ArrowRight") { rightBtn.click(); }
 });
