@@ -1,6 +1,6 @@
 /**
  * P33 主编的权柄（左滑右滑）
- * Upgraded: 8 clues (doubled), swipe animation, ending evaluation, statistics
+ * 20 clues, swipe animation, ending evaluation, statistics
  */
 const card = document.getElementById("card");
 const leftBtn = document.getElementById("leftBtn");
@@ -107,38 +107,32 @@ function showEnding() {
   }
 }
 
-leftBtn.addEventListener("click", () => {
-  if (isAnimating) return;
+function commitDecision(action, deltaKey, translateX) {
+  const clue = CLUES[idx];
+  if (isAnimating || !clue) return;
   isAnimating = true;
-  const delta = CLUES[idx].hold;
-  decisions.push({ action: "扣留", delta });
-  // Swipe left animation
+  const delta = clue[deltaKey];
+  decisions.push({ action, delta });
   card.style.transition = "transform 0.2s, opacity 0.2s";
-  card.style.transform = "translateX(-60px)";
+  card.style.transform = `translateX(${translateX})`;
   card.style.opacity = "0";
   setTimeout(() => {
-    isAnimating = false;
-    apply(delta);
-    idx += 1;
-    showCard();
+    try {
+      apply(delta);
+      idx += 1;
+      showCard();
+    } finally {
+      isAnimating = false;
+    }
   }, 200);
+}
+
+leftBtn.addEventListener("click", () => {
+  commitDecision("扣留", "hold", "-60px");
 });
 
 rightBtn.addEventListener("click", () => {
-  if (isAnimating) return;
-  isAnimating = true;
-  const delta = CLUES[idx].release;
-  decisions.push({ action: "发布", delta });
-  // Swipe right animation
-  card.style.transition = "transform 0.2s, opacity 0.2s";
-  card.style.transform = "translateX(60px)";
-  card.style.opacity = "0";
-  setTimeout(() => {
-    isAnimating = false;
-    apply(delta);
-    idx += 1;
-    showCard();
-  }, 200);
+  commitDecision("发布", "release", "60px");
 });
 
 updateBars();
@@ -148,8 +142,12 @@ showCard();
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
   if (e.repeat) return;
-  if (e.key === "ArrowLeft") { leftBtn.click(); }
-  if (e.key === "ArrowRight") { rightBtn.click(); }
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  if (leftBtn.disabled || rightBtn.disabled) return;
+  e.preventDefault();
+  if (isAnimating) return;
+  if (e.key === "ArrowLeft") leftBtn.click();
+  else rightBtn.click();
 });
 
 // === PM Metrics Integration ===
