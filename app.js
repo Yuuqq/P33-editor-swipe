@@ -73,6 +73,9 @@ function apply(delta) {
 }
 
 function showEnding() {
+  card.style.transition = "none";
+  card.style.transform = "none";
+  card.style.opacity = "1";
   const released = decisions.filter(d => d.action === "发布").length;
   const held = decisions.filter(d => d.action === "扣留").length;
 

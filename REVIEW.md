@@ -14,12 +14,12 @@ No current RCE, data-exfil, or stored XSS. `CLUES` is a hardcoded literal array 
 
 - **Status:** FIXED in this revision
 - **Category:** Reliability
-- **File:** `app.js` 110–151 (`commitDecision`, both button listeners, `keydown`)
+- **File:** `app.js` 113–154 (`commitDecision`, both button listeners, `keydown`)
 - **What was wrong:** `idx` advanced only inside a 200ms `setTimeout`. A second click, or a held arrow key (`keydown` repeat), read the same `CLUES[idx]`, pushed a duplicate decision, applied the same delta twice, and skipped later cards. That is state corruption, not a reliable `TypeError`. `idx += 1` and `showEnding()` → `disabled = true` run in the same turn, and WHATWG `HTMLElement.click()` returns immediately on a disabled button.
 - **What landed:**
-  - `commitDecision` returns before setting the lock when `isAnimating` is set or `CLUES[idx]` is missing (110–112). The property read cannot throw and stick the lock.
-  - The lock is cleared in a `finally` after `apply` / `idx += 1` / `showCard` (119–126), including when that work throws.
-  - `keydown` ignores `e.repeat` (144). Arrow keys call `preventDefault` only while the round is still playable (146–147), so a finished round can still be scrolled. Input and textarea targets are ignored (143).
+  - `commitDecision` returns before setting the lock when `isAnimating` is set or `CLUES[idx]` is missing (113–115). The property read cannot throw and stick the lock.
+  - The lock is cleared in a `finally` after `apply` / `idx += 1` / `showCard` (122–129), including when that work throws.
+  - `keydown` ignores `e.repeat` (147). Arrow keys call `preventDefault` only while the round is still playable (149–150), so a finished round can still be scrolled. Input and textarea targets are ignored (146).
 
 No automated test covers this. `QA.md` still says there is no serious known issue (see LOW #6).
 
@@ -42,7 +42,7 @@ No automated test covers this. `QA.md` still says there is no serious known issu
 - **Category:** Documentation integrity
 - **File:** `README.md` 16–20 and 26–28; `QA.md` 11–15, 23–27, 35–45; `SPEC.md` 50–56; `index.html` 12, 73
 - **Impact:**
-  - README documents `` `1` `2` `3` `` 分级评分. No such keys exist. Handled keys are only ArrowLeft / ArrowRight (`app.js` 145–150).
+  - README documents `` `1` `2` `3` `` 分级评分. No such keys exist. Handled keys are only ArrowLeft / ArrowRight (`app.js` 148–153).
   - README lists dark mode, Ctrl+K, and PWA as features of this repo. `index.html` 73 loads `../shared/releases/v2.6/loader.js`, which is not in this repository. `README.md` 39 still names `dark-toggle.js`.
   - `QA.md` 12: “打开 index.html → 输入测试数据 → 执行核心操作”, marked Pass. The page has no text inputs. `QA.md` 37: “暂无已知严重问题”, with three Approved sign-offs (43–45), while the race above was trivial to hit and FR-1 is absent.
   - `SPEC.md` 51–56 acceptance boxes are all `[ ]`.
@@ -62,8 +62,8 @@ No automated test covers this. `QA.md` still says there is no serious known issu
 ### 6. Game logic is inline, and QA certifies a template
 
 - **Category:** Test coverage
-- **File:** `app.js` (167 lines); `QA.md` 11–15 and 35–45
-- **Impact:** Score clamp (`apply`, 69–72) and the ending tier (`showEnding`, 80–88) sit next to DOM writes. A `GameEngine` plus Jest is optional for this size. The sharper gap is `QA.md`: it records a pass for “输入测试数据” on a page with no inputs, and it signs off “暂无已知严重问题”.
+- **File:** `app.js` (170 lines); `QA.md` 11–15 and 35–45
+- **Impact:** Score clamp (`apply`, 69–72) and the ending tier (`showEnding`, 83–91) sit next to DOM writes. A `GameEngine` plus Jest is optional for this size. The sharper gap is `QA.md`: it records a pass for “输入测试数据” on a page with no inputs, and it signs off “暂无已知严重问题”.
 - **Fix suggestion:** Keep logic inline until the file grows. Replace the QA template with steps that match the page (click, key-repeat, ending counts).
 
 ### 7. “支持 JSON 自定义” is an abandoned mitigation
@@ -76,19 +76,21 @@ No automated test covers this. `QA.md` still says there is no serious known issu
 ### 8. `innerHTML` for trusted strings
 
 - **Category:** Unsafe default, not a current XSS
-- **File:** `app.js` 48–49 (`updateBars`), 90–98 (`card.innerHTML`), 104–106 (`resultEl.innerHTML`). `showCard` already uses `textContent` (60).
+- **File:** `app.js` 48–49 (`updateBars`), 93–101 (`card.innerHTML`), 107–109 (`resultEl.innerHTML`). `showCard` already uses `textContent` (60).
 - **Impact:** Today the interpolated values are literals or numbers (`emoji`, `title`, `desc`, `cred`, `traffic`, and decision deltas from `CLUES`). That is not a vulnerability. It becomes DOM XSS if untrusted JSON is later interpolated the same way.
 - **Fix suggestion:** Build those nodes with `createElement` / `textContent` when the data stops being a literal.
 
 ### 9. Classroom CSS, and no rematch control
 
 - **Category:** UX
-- **File:** `styles.css` 18, 51, 93–98, 296–311; `app.js` 101
+- **File:** `styles.css` 18, 51, 93–98, 296–342; `app.js` 76–78 and 104
 - **Impact:**
   - `button[id*="Btn"]:not(:disabled)` runs `btnPulse` forever (97–98). PR #1 already targets the pulse; this branch does not.
-  - `[class*="card"]:hover` (18) matches `news-card`, and `.news-card:hover` (300) sets `transform`. Both fight the inline `translateX` the script uses to swipe.
-  - `@media (max-width: 600px)` sets `button { width: 100%; }` (51), so the two actions stop sitting in one row.
-  - Ending copy says refresh to replay (`app.js` 101). `styles.css` 296 already selects `[id="restartBtn"]`. No such button exists. `pm-metrics.js` exports `markTaskComplete` (86–93, 192) and `app.js` never calls it (153–167 only `markTaskStart`).
+  - **FIXED here:** `[class*="card"]` runs `cardReveal` with `animation-fill-mode: both` (84–86). That matches `.news-card` and kept `transform` / `opacity` at the keyframe end, so the inline `translateX` never painted. `#card.news-card { animation: none; }` (323–325) removes that override. Hover rules at 18 and 300 still set `transform`, but they do not beat an inline style.
+  - `@media (max-width: 600px)` sets `button { width: 100%; }` (51). At a 390px viewport the two actions still share one row; flex shrink absorbs the width. They do not wrap.
+  - **FIXED here:** the last swipe leaves `#card` at `opacity: 0`. `showCard` returns into `showEnding` without the slide-in, so the ending title was in the DOM and invisible. `showEnding` now clears that transform and opacity (76–78) before writing the result.
+  - Ending copy says refresh to replay (`app.js` 104). `styles.css` 296 already selects `[id="restartBtn"]`. No such button exists. `pm-metrics.js` exports `markTaskComplete` (86–93, 192) and `app.js` never calls it (156–170 only `markTaskStart`).
+  - **FIXED here:** `updateBars` writes `.bar-mini` / `.bar-fill`, but those classes had no box. The track and fill now have height and color, so the 公信力 / 流量 numbers are not the only signal.
 - **Not a dark-mode bug:** `.news-card { background:#fffdf9 }` at `styles.css` 7 is overridden by the later `.news-card` rule at 305–308, which uses `var(--card)`.
 
 ## NIT

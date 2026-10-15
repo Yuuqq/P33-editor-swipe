@@ -317,3 +317,27 @@ svg text { font-family: ui-sans-serif, system-ui, "Noto Sans SC", sans-serif; }
 }
 .decision-history { font-size: 0.88em; max-height: 200px; overflow-y: auto; }
 
+/* cardReveal uses fill-mode: both on [class*="card"], which matches
+   .news-card and keeps translateY(0) / opacity:1 over the inline
+   transform the script writes. Without this, the swipe never paints. */
+#card.news-card {
+  animation: none;
+}
+
+.bar-mini {
+  display: inline-block;
+  width: 120px;
+  height: 8px;
+  margin-left: 8px;
+  vertical-align: middle;
+  background: #ead6c5;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+}
+.cred-fill { background: #2f6fed; }
+.traffic-fill { background: #c96b2c; }
+
