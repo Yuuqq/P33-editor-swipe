@@ -10,6 +10,7 @@
   <meta name="color-scheme" content="light dark">
   <title>P33 主编的权柄（左滑右滑）</title>
   <link rel="stylesheet" href="../shared/design-tokens.css" />
+<link rel="stylesheet" href="https://yuuqq.github.io/shared/design-tokens.css" />
   <link rel="stylesheet" href="./styles.css" />
   <meta name="description" content="主编的权柄。P33 主编的权柄（左滑右滑）" />
   <meta property="og:title" content="P33 主编的权柄左滑右滑" />
@@ -35,7 +36,7 @@ a[href]::after{content:" (" attr(href) ")";font-size:9pt;color:#666}
       <p>左滑扣留，右滑发布，观察公信力与流量如何变化。</p>
     </header>
 
-    <section class="card"><details class="teach-card" open><summary>🎓 新闻编辑室的“发与不发”</summary><p>新闻编辑每天面临“发还是押”的决策：发布未经充分核实的暖新闻可获流量但损失公信力，压下新闻等待核实可能横去独家但保护声誉。本游戏模拟 20 个新闻线索，帮助你在公信力和流量之间找到平衡。</p></details></section>
+    <section class="card"><details class="teach-card"><summary>🎓 新闻编辑室的“发与不发”</summary><p>新闻编辑每天面临“发还是押”的决策：发布未经充分核实的暖新闻可获流量但损失公信力，压下新闻等待核实可能横去独家但保护声誉。本游戏模拟 20 个新闻线索，帮助你在公信力和流量之间找到平衡。</p></details></section>
 
     <section class="card">
       <div id="card" class="news-card"></div>
@@ -70,7 +71,21 @@ a[href]::after{content:" (" attr(href) ")";font-size:9pt;color:#666}
     <a href="https://yuuqq.github.io/journalism-toolbox/" style="text-decoration:none;">📋 工具箱导航</a>
     <span style="opacity:.4">P33</span>
   </nav>
-  <script src="../shared/releases/v2.6/loader.js" data-modules="dark,kbd,cmd,toast,onboarding,pedagogy-p1,pedagogy-p2,nav"></script>
+  <script>
+(function () {
+  var modules = "dark,kbd,cmd,toast,onboarding,pedagogy-p1,pedagogy-p2,nav";
+  var s = document.createElement("script");
+  s.src = "../shared/releases/v2.6/loader.js";
+  s.setAttribute("data-modules", modules);
+  s.onerror = function () {
+    var t = document.createElement("script");
+    t.src = "https://yuuqq.github.io/shared/releases/v2.6/loader.js";
+    t.setAttribute("data-modules", modules);
+    document.body.appendChild(t);
+  };
+  document.body.appendChild(s);
+})();
+</script>
   <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}</script>
 
 </body>
