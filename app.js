@@ -50,13 +50,16 @@ function updateBars() {
 
 function showCard() {
   if (idx >= CLUES.length) {
+    card.style.transition = "none";
+    card.style.transform = "none";
+    card.style.opacity = "1";
     showEnding();
     return;
   }
   // Slide-in animation
   card.style.transform = "translateX(40px)";
   card.style.opacity = "0";
-  card.textContent = `📰 线索 ${idx + 1}/${CLUES.length}: ${CLUES[idx].text}`;
+  card.textContent = `线索 ${idx + 1}/${CLUES.length}: ${CLUES[idx].text}`;
   requestAnimationFrame(() => {
     card.style.transition = "transform 0.3s, opacity 0.3s";
     card.style.transform = "translateX(0)";
@@ -75,20 +78,19 @@ function showEnding() {
   const released = decisions.filter(d => d.action === "发布").length;
   const held = decisions.filter(d => d.action === "扣留").length;
 
-  let title, desc, emoji;
+  let title, desc;
   if (cred >= 70 && traffic >= 50) {
-    emoji = "🏆"; title = "标杆主编"; desc = "你在公信力和流量之间找到了完美平衡！";
+    title = "标杆主编"; desc = "你在公信力和流量之间找到了完美平衡！";
   } else if (cred >= 60) {
-    emoji = "📰"; title = "严谨主编"; desc = "你重视事实核查，但可能错过了一些流量机会。";
+    title = "严谨主编"; desc = "你重视事实核查，但可能错过了一些流量机会。";
   } else if (traffic >= 70) {
-    emoji = "📈"; title = "流量猎手"; desc = "你追逐热度的嗅觉一流，但公信力需要修复。";
+    title = "流量猎手"; desc = "你追逐热度的嗅觉一流，但公信力需要修复。";
   } else {
-    emoji = "😰"; title = "两难困境"; desc = "公信力和流量双双受挫，新闻伦理确实不易。";
+    title = "两难困境"; desc = "公信力和流量双双受挫，新闻伦理确实不易。";
   }
 
   card.innerHTML = `
     <div class="ending">
-      <div class="ending-emoji">${emoji}</div>
       <h2>${title}</h2>
       <p>${desc}</p>
       <p class="ending-stats">发布 ${released} 条 / 扣留 ${held} 条</p>
@@ -101,7 +103,7 @@ function showEnding() {
 
   if (resultEl) {
     resultEl.innerHTML = decisions.map((d, i) =>
-      `<div class="decision-log"><span>${i + 1}. ${d.action === "发布" ? "📤" : "📥"} ${d.action}</span><span class="decision-effect">公信力 ${d.delta.cred >= 0 ? "+" : ""}${d.delta.cred} / 流量 ${d.delta.traffic >= 0 ? "+" : ""}${d.delta.traffic}</span></div>`
+      `<div class="decision-log"><span>${i + 1}. ${d.action}</span><span class="decision-effect">公信力 ${d.delta.cred >= 0 ? "+" : ""}${d.delta.cred} / 流量 ${d.delta.traffic >= 0 ? "+" : ""}${d.delta.traffic}</span></div>`
     ).join("");
   }
 }
